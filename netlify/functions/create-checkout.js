@@ -15,6 +15,13 @@ exports.handler = async (event) => {
     const priceInCents = Math.round(listing.price * 100);
     const wgFeeInCents = Math.round(listing.price * 0.05 * 100);
 
+    const paymentIntentData = listing.stripeAccountId
+      ? {
+          application_fee_amount: wgFeeInCents,
+          transfer_data: { destination: listing.stripeAccountId },
+        }
+      : {};
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -32,10 +39,7 @@ exports.handler = async (event) => {
           quantity: 1,
         },
       ],
-      payment_intent_data: {
-        application_fee_amount: wgFeeInCents,
-        transfer_data: listing.stripeAccountId ? { destination: listing.stripeAccountId } : undefined,
-      },
+      payment_intent_data: paymentIntentData,
       metadata: {
         listingId: String(listing.id),
         listingTitle: listing.title,
