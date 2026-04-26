@@ -1,0 +1,8 @@
+{
+  "name": "wolf-garden-functions",
+  "version": "1.0.0",
+  "description": "Wolf Garden Netlify Functions",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}
