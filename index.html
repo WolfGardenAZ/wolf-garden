@@ -1018,7 +1018,7 @@ function renderOutfitters() {
   const filterEl = document.getElementById('outfitterFilters');
   filterEl.innerHTML = `
     <button class="chip ${outfitterSpeciesFilter === '' ? 'on' : ''}" onclick="setOutfitterFilter('')">All Species</button>
-    ${allSpecies.map(s => `<button class="chip ${outfitterSpeciesFilter === s ? 'on' : ''}" onclick="setOutfitterFilter('${s}')">s}</button>`).join('')}
+    ${allSpecies.map(s => `<button class="chip ${outfitterSpeciesFilter === s ? 'on' : ''}" onclick="setOutfitterFilter('${s}')">${s}</button>`).join('')}
   `;
 
   // Filter outfitters
