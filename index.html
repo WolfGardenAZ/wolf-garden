@@ -753,10 +753,10 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
   <div class="filter-bar">
     <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--sandstone);opacity:0.45;">Filter:</span>
     <button class="chip" id="chipAll" onclick="setTypeFilter('')">All</button>
-    <button class="chip" id="chipSell" onclick="setTypeFilter('sell')">💰 For Sale</button>
-    <button class="chip blue" id="chipTrade" onclick="setTypeFilter('trade')">🔄 Trades</button>
-    <button class="chip purple" id="chipRent" onclick="setTypeFilter('rent')">📅 Rentals</button>
-    <button class="chip" id="chipFeatured" onclick="toggleFeaturedFilter()">⭐ Featured</button>
+    <button class="chip" id="chipSell" onclick="setTypeFilter('sell')">For Sale</button>
+    <button class="chip blue" id="chipTrade" onclick="setTypeFilter('trade')">Trades</button>
+    <button class="chip purple" id="chipRent" onclick="setTypeFilter('rent')">Rentals</button>
+    <button class="chip" id="chipFeatured" onclick="toggleFeaturedFilter()">Featured</button>
   </div>
   <div style="padding:0.5rem 2rem;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;color:var(--sandstone);opacity:0.55;" id="resultsBar">Showing all listings</div>
   <div class="listings-grid" id="listingsGrid"></div>
@@ -1022,7 +1022,7 @@ function renderOutfitters() {
   const filterEl = document.getElementById('outfitterFilters');
   filterEl.innerHTML = `
     <button class="chip ${outfitterSpeciesFilter === '' ? 'on' : ''}" onclick="setOutfitterFilter('')">All Species</button>
-    ${allSpecies.map(s => `<button class="chip ${outfitterSpeciesFilter === s ? 'on' : ''}" onclick="setOutfitterFilter('${s}')">${s}</button>`).join('')}
+    ${allSpecies.map(s => `<button class="chip ${outfitterSpeciesFilter === s ? 'on' : ''}" onclick="setOutfitterFilter('${s}')">s}</button>`).join('')}
   `;
 
   // Filter outfitters
@@ -1771,7 +1771,7 @@ function showDetail(id) {
     <div class="detail-wrap">
       <div class="detail-grid">
         <div class="detail-img">
-          ${l.img ? '<img src="'+l.img+'" alt="'+l.title+'">' : '<span style="font-size:5rem;">'+l.emoji+'</span>'}
+          ${l.img ? '<img src="'+l.img+'" alt="'+l.title+'">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(201,151,58,0.06);"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,58,0.35)" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>'}
           ${l.sold ? '<div class="sold-overlay"><div class="sold-stamp">SOLD</div></div>' : ''}
         </div>
         <div>
@@ -1837,8 +1837,8 @@ function showDetail(id) {
 
           <!-- Share row -->
           <div class="share-row">
-            <button class="share-chip" onclick="copyLink(${l.id})">🔗 Copy Link</button>
-            <button class="share-chip" onclick="shareNative(${l.id})">📤 Share</button>
+            <button class="share-chip" onclick="copyLink(${l.id})">Copy Link</button>
+            <button class="share-chip" onclick="shareNative(${l.id})">Share</button>
           </div>
           ${!isOwner ? '<button class="report-btn" onclick="openReport('+l.id+')">⚑ Report listing</button>' : ''}
         </div>
@@ -2478,7 +2478,7 @@ function switchProfileTab(tab) {
     if (!myListings.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div><p>No listings yet</p></div>'; return; }
     el.innerHTML = '<div class="listings-grid" style="padding:0;">' + myListings.map(l => `
       <div class="lcard" onclick="showDetail(${l.id})">
-        <div class="lcard-img">${l.img?'<img src="'+l.img+'">':l.emoji}${l.sold?'<div class="sold-overlay"><div class="sold-stamp">SOLD</div></div>':''}</div>
+        <div class="lcard-img">${l.img?'<img src="'+l.img+'">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(201,151,58,0.08);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,58,0.4)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>'}${l.sold?'<div class="sold-overlay"><div class="sold-stamp">SOLD</div></div>':''}</div>
         <div class="lcard-body">
           <div class="lcard-title">${l.title}</div>
           <div class="lcard-footer" style="margin-top:0.5rem;">
@@ -2498,7 +2498,7 @@ function switchProfileTab(tab) {
     if (!saved.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">♡</div><p>No saved listings yet</p></div>'; return; }
     el.innerHTML = '<div class="listings-grid" style="padding:0;">' + saved.map(l => `
       <div class="lcard" onclick="showDetail(${l.id})">
-        <div class="lcard-img">${l.img?'<img src="'+l.img+'">':l.emoji}</div>
+        <div class="lcard-img">${l.img?'<img src="'+l.img+'">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(201,151,58,0.08);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,58,0.4)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>'}</div>
         <div class="lcard-body">
           <div class="lcard-title">${l.title}</div>
           <div class="lcard-footer" style="margin-top:0.5rem;">
