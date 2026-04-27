@@ -615,32 +615,27 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
   <!-- Feature cards -->
   <div class="features-grid">
     <div class="feature-card" onclick="go('browse')">
-      <div class="feature-icon">🛍️</div>
-      <div class="feature-title">Marketplace</div>
+            <div class="feature-title">Marketplace</div>
       <div class="feature-desc">Buy and sell hunting, fishing, and outdoor gear directly with fellow outdoorsmen. Verified sellers, buyer protection on every sale.</div>
       <span class="feature-tag tag-new">Live Now</span>
     </div>
     <div class="feature-card" onclick="filterAndBrowse('trade')">
-      <div class="feature-icon">🔄</div>
-      <div class="feature-title">Trading Post</div>
+            <div class="feature-title">Trading Post</div>
       <div class="feature-desc">Swap gear you don't need for gear you do. Free to trade — no Wolf Garden fee. Just pay your own shipping and make a deal.</div>
       <span class="feature-tag tag-free">Free to Trade</span>
     </div>
     <div class="feature-card" onclick="filterAndBrowse('rent')">
-      <div class="feature-icon">📅</div>
-      <div class="feature-title">Rental Hub</div>
+            <div class="feature-title">Rental Hub</div>
       <div class="feature-desc">Rent expensive gear before you buy. Night vision, spotting scopes, quality optics — available by the day. Ship to your door.</div>
       <span class="feature-tag tag-hot">New Feature</span>
     </div>
     <div class="feature-card" onclick="go('compare')">
-      <div class="feature-icon">💰</div>
-      <div class="feature-title">Price Compare</div>
+            <div class="feature-title">Price Compare</div>
       <div class="feature-desc">Search any outdoor product and compare prices across Cabela's, Bass Pro, Amazon, and more. Find the best deal instantly.</div>
       <span class="feature-tag tag-new">Free Tool</span>
     </div>
     <div class="feature-card" onclick="go('outfitters')" style="border-color:rgba(201,151,58,0.25);">
-      <div class="feature-icon">🏔️</div>
-      <div class="feature-title">Outfitters</div>
+            <div class="feature-title">Outfitters</div>
       <div class="feature-desc">Find trusted Arizona guides and outfitters for Elk, Coues deer, Bighorn sheep, and more. People fly in from around the world to hunt this country.</div>
       <span class="feature-tag" style="background:rgba(201,151,58,0.15);color:var(--gold);border-color:rgba(201,151,58,0.4);">Arizona's Best</span>
     </div>
@@ -2283,7 +2278,7 @@ function submitListing() {
   if (currentPostType === 'trade' && !wants) { toast('Please describe what you want in return'); return; }
   if (currentPostType === 'rent' && (!rpd || rpd <= 0)) { toast('Please enter a price per day'); return; }
 
-  const emojiMap = {Hunting:'',Fishing:'',Camping:'',Hiking:'',Optics:'',Archery:'',Apparel:'',Trapping:'',Shooting:'','Shooting Accessories':''};
+  const emojiMap = {Hunting:'',Fishing:'',Camping:'',Hiking:'',Optics:'',Archery:'',Apparel:'',Trapping:'','Shooting Accessories':''};
 
   const newListing = {
     id: Date.now(),
