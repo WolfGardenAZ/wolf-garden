@@ -1414,9 +1414,9 @@ let rentalEnd = null;
 
 // Seed/demo listings (always visible)
 const seedListings = [
-  {id:1,title:'Vortex Crossfire HD 10x42 Binoculars',category:'Optics',condition:'Like New',listingType:'sell',price:149,desc:'DEMO LISTING — This is a sample listing to show how Wolf Garden works. Buy, sell, and trade outdoor gear with fellow Arizona outdoorsmen. Clear optics, fully multi-coated lenses, rubber armor.',seller:'WolfGardenDemo',sellerRating:5.0,location:'Phoenix, AZ',emoji:'',date:Date.now()-86400000,reviews:[],demo:true},
-  {id:2,title:'Mathews V3X 29 Compound Bow',category:'Archery',condition:'Good',listingType:'trade',wants:'Looking for quality hunting optics, trail cameras, or camping gear of similar value.',price:0,desc:'DEMO LISTING — This is a sample listing to show how Wolf Garden works. Trades are always 100% free on Wolf Garden. 29" draw, 60-70lb, includes QAD rest and Trophy Ridge sight.',seller:'WolfGardenDemo',sellerRating:5.0,location:'Flagstaff, AZ',emoji:'',date:Date.now()-172800000,reviews:[],demo:true},
-  {id:3,title:'Vortex Razor HD 27-60x85 Spotting Scope',category:'Optics',condition:'Like New',listingType:'rent',rentalPricePerDay:35,rentalMinDays:2,rentalMaxDays:10,rentalDeposit:200,rentalValue:1200,price:0,desc:'DEMO LISTING — This is a sample listing to show how Wolf Garden works. Try before you buy — rent premium gear by the day. Ships in original hardcase.',seller:'WolfGardenDemo',sellerRating:5.0,location:'Tucson, AZ',emoji:'',date:Date.now()-259200000,reviews:[],demo:true},
+  {id:1,title:'Vortex Crossfire HD 10x42 Binoculars',category:'Optics',condition:'Like New',listingType:'sell',price:149,desc:'DEMO LISTING — Sample listing showing how Wolf Garden works. Clear optics, fully multi-coated lenses, rubber armor.',seller:'WolfGardenDemo',sellerRating:5.0,location:'Phoenix, AZ',emoji:'',date:Date.now()-86400000,reviews:[],demo:true},
+  {id:2,title:'Mathews V3X 29 Compound Bow',category:'Archery',condition:'Good',listingType:'trade',wants:'Looking for quality hunting optics, trail cameras, or camping gear.',price:0,desc:'DEMO LISTING — Sample listing showing how trades work on Wolf Garden. 100% free to trade. 29" draw, 60-70lb.',seller:'WolfGardenDemo',sellerRating:5.0,location:'Flagstaff, AZ',emoji:'',date:Date.now()-172800000,reviews:[],demo:true},
+  {id:3,title:'Vortex Razor HD 27-60x85 Spotting Scope',category:'Optics',condition:'Like New',listingType:'rent',rentalPricePerDay:35,rentalMinDays:2,rentalMaxDays:10,rentalDeposit:200,rentalValue:1200,price:0,desc:'DEMO LISTING — Sample listing showing how rentals work on Wolf Garden. Ships in original hardcase.',seller:'WolfGardenDemo',sellerRating:5.0,location:'Tucson, AZ',emoji:'',date:Date.now()-259200000,reviews:[],demo:true},
 ];
 let listings = [...seedListings];
 
@@ -1749,7 +1749,6 @@ function showDetail(id) {
   let actionsHTML = '';
   if (!isOwner) {
     if (!isTrade && !isRent) actionsHTML += '<button class="btn btn-gold" onclick="handleBuy('+l.id+')">Buy Now — $'+l.price.toLocaleString()+'</button>';
-  if (!isTrade && !isRent && l.price > 0) actionsHTML += '<div style="margin-top:0.75rem;"><div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;"><input id="zipInput-'+l.id+'" type="text" placeholder="Enter ZIP for shipping rate" maxlength="5" style="flex:1;min-width:140px;background:var(--black);border:1px solid rgba(201,151,58,0.2);color:var(--cream);padding:0.5rem 0.75rem;font-family:Barlow,sans-serif;font-size:0.9rem;outline:none;" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')"><button class="btn btn-outline btn-sm" onclick="fetchShippingRates('+l.id+')">Get Rates</button></div><div id="shippingRates-'+l.id+'" style="margin-top:0.5rem;"></div></div>';
     if (!isTrade && !isRent) actionsHTML += '<button class="btn btn-outline" onclick="toggleOffer('+l.id+')">Make Offer</button>';
     if (isTrade || l.listingType === 'both') actionsHTML += '<button class="btn btn-blue" onclick="toggleTradeOffer('+l.id+')">🔄 Make Trade Offer</button>';
     if (isRent) actionsHTML += '<button class="btn btn-purple" onclick="openBooking('+l.id+')">📅 Book Rental</button>';
@@ -2020,32 +2019,6 @@ async function executeBooking(id, days, total) {
 // ═══════════════════════════════════
 // BUY / OFFER / TRADE / MSG / SAVE
 // ═══════════════════════════════════
-async function fetchShippingRates(id) {
-  const l = listings.find(x => x.id === id);
-  if (!l) return;
-  const zipEl = document.getElementById('zipInput-' + id);
-  const ratesEl = document.getElementById('shippingRates-' + id);
-  const zip = zipEl ? zipEl.value.trim() : '';
-  if (!zip || zip.length !== 5) { toast('Enter a valid 5-digit ZIP code'); return; }
-  ratesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--sandstone);opacity:0.7;padding:0.4rem 0;">Getting rates...</div>';
-  try {
-    const res = await fetch('/.netlify/functions/get-shipping-rates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toZip: zip, weight: 2, length: 12, width: 10, height: 6 }),
-    });
-    const data = await res.json();
-    if (!data.rates || data.rates.length === 0) {
-      ratesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--sandstone);opacity:0.7;padding:0.4rem 0;">No rates available for this ZIP.</div>';
-      return;
-    }
-    ratesEl.innerHTML = '<div style="font-size:0.75rem;font-family:Barlow Condensed,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:0.3rem;">Shipping Options</div>' +
-      data.rates.map(r => '<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:0.25rem 0;border-bottom:1px solid rgba(201,151,58,0.08);"><span style="color:var(--sandstone);">' + r.provider + ' ' + r.service + (r.days ? ' (' + r.days + ' days)' : '') + '</span><span style="color:var(--cream);font-weight:600;">$' + r.amount.toFixed(2) + '</span></div>').join('');
-  } catch(err) {
-    ratesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--danger);padding:0.4rem 0;">Could not get rates. Try again.</div>';
-  }
-}
-
 async function handleBuy(id) {
   if (!currentUser) { openAuth(); return; }
   const l = listings.find(x => x.id === id);
@@ -2499,9 +2472,7 @@ function switchProfileTab(tab) {
     if (!myListings.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div><p>No listings yet</p></div>'; return; }
     el.innerHTML = '<div class="listings-grid" style="padding:0;">' + myListings.map(l => `
       <div class="lcard" onclick="showDetail(${l.id})">
-        <div classlcard-img">${
-          l.img ? '<img src="'+l.img+'">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(201,151,58,0.06);"></div>'
-        }${l.demo ? '<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;"><div style="background:rgba(0,0,0,0.6);color:rgba(201,151,58,0.95);font-family:Bebas Neue,sans-serif;font-size:2rem;letter-spacing:0.2em;transform:rotate(-25deg);padding:0.1rem 0.75rem;border:2px solid rgba(201,151,58,0.6);">DEMO</div></div>' : ''}${l.sold?'<div class="sold-overlay"><div class="sold-stamp">SOLD</div></div>':''}</div>
+        <div class="lcard-img">${l.img?'<img src="'+l.img+'">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(201,151,58,0.08);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,58,0.4)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>'}${l.sold?'<div class="sold-overlay"><div class="sold-stamp">SOLD</div></div>':''}</div>
         <div class="lcard-body">
           <div class="lcard-title">${l.title}</div>
           <div class="lcard-footer" style="margin-top:0.5rem;">
