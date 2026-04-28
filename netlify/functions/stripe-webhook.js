@@ -33,23 +33,37 @@ exports.handler = async (event) => {
         subject: isRental
           ? `Wolf Garden — Rental Booking Confirmed: ${listingTitle}`
           : `Wolf Garden — Order Confirmed: ${listingTitle}`,
-        body: isRental
-          ? `Your rental booking for "${listingTitle}" is confirmed. Total charged: $${amount}. The seller will be in touch shortly with shipping details and return label. Questions? Email wolfgarden21@gmail.com`
-          : `Your order for "${listingTitle}" is confirmed. Total charged: $${amount}. The seller will ship your item and provide a tracking number through Wolf Garden messaging. Questions? Email wolfgarden21@gmail.com`,
+        html: isRental
+          ? `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h2 style="color:#C9973A;">Wolf Garden</h2>
+              <p>Your rental booking for <strong>${listingTitle}</strong> is confirmed.</p>
+              <p><strong>Total charged: $${amount}</strong></p>
+              <p>The seller will be in touch shortly with shipping details.</p>
+              <p style="color:#888;font-size:0.85rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+            </div>`
+          : `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h2 style="color:#C9973A;">Wolf Garden</h2>
+              <p>Your order for <strong>${listingTitle}</strong> is confirmed.</p>
+              <p><strong>Total charged: $${amount}</strong></p>
+              <p>The seller will ship your item and provide tracking through Wolf Garden messaging.</p>
+              <p style="color:#888;font-size:0.85rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+            </div>`,
       });
     }
 
-    // Send seller notification email
-    // Note: In production you'd look up seller email from Firebase
-    // For now we notify the Wolf Garden admin email
+    // Notify Wolf Garden admin of new sale
     await sendEmail({
       to: 'wolfgarden21@gmail.com',
       subject: isRental
-        ? `Wolf Garden — New Rental Booking: ${listingTitle}`
-        : `Wolf Garden — New Sale: ${listingTitle}`,
-      body: isRental
-        ? `New rental booking on Wolf Garden!\n\nItem: ${listingTitle}\nListing ID: ${listingId}\nAmount: $${amount}\nBuyer email: ${buyerEmail || 'not provided'}\n\nLog in to Wolf Garden to see the details and arrange shipping.`
-        : `New sale on Wolf Garden!\n\nItem: ${listingTitle}\nListing ID: ${listingId}\nAmount: $${amount}\nBuyer email: ${buyerEmail || 'not provided'}\n\nLog in to Wolf Garden to see the details and ship the item.`,
+        ? `New Rental Booking: ${listingTitle}`
+        : `New Sale: ${listingTitle}`,
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+        <h2 style="color:#C9973A;">Wolf Garden — New ${isRental ? 'Rental' : 'Sale'}</h2>
+        <p><strong>Item:</strong> ${listingTitle}</p>
+        <p><strong>Listing ID:</strong> ${listingId}</p>
+        <p><strong>Amount:</strong> $${amount}</p>
+        <p><strong>Buyer email:</strong> ${buyerEmail || 'not provided'}</p>
+      </div>`,
     });
   }
 
@@ -59,14 +73,23 @@ exports.handler = async (event) => {
   };
 };
 
-async function sendEmail({ to, subject, body }) {
-  // Using Netlify's built-in email via fetch to a simple email API
-  // We'll use EmailJS or a simple SMTP approach
-  // For now log it - we'll wire up the email service next
-  console.log(`EMAIL TO: ${to}`);
-  console.log(`SUBJECT: ${subject}`);
-  console.log(`BODY: ${body}`);
+async function sendEmail({ to, subject, html }) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Wolf Garden <noreply@wolfgardenaz.com>',
+      to,
+      subject,
+      html,
+    }),
+  });
 
-  // TODO: Wire up email sending service (Resend, SendGrid, etc.)
-  return true;
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('Resend error:', err);
+  }
 }
