@@ -1750,6 +1750,7 @@ function showDetail(id) {
   let actionsHTML = '';
   if (!isOwner) {
     if (!isTrade && !isRent) actionsHTML += '<button class="btn btn-gold" onclick="handleBuy('+l.id+')">Buy Now — $'+l.price.toLocaleString()+'</button>';
+  if (!isTrade && !isRent && l.price > 0) actionsHTML += '<div style="margin-top:0.75rem;"><div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;"><input id="zipInput-'+l.id+'" type="text" placeholder="Enter ZIP for shipping rate" maxlength="5" style="flex:1;min-width:140px;background:var(--black);border:1px solid rgba(201,151,58,0.2);color:var(--cream);padding:0.5rem 0.75rem;font-family:Barlow,sans-serif;font-size:0.9rem;outline:none;" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')"><button class="btn btn-outline btn-sm" onclick="fetchShippingRates('+l.id+')">Get Rates</button></div><div id="shippingRates-'+l.id+'" style="margin-top:0.5rem;"></div></div>';
     if (!isTrade && !isRent) actionsHTML += '<button class="btn btn-outline" onclick="toggleOffer('+l.id+')">Make Offer</button>';
     if (isTrade || l.listingType === 'both') actionsHTML += '<button class="btn btn-blue" onclick="toggleTradeOffer('+l.id+')">🔄 Make Trade Offer</button>';
     if (isRent) actionsHTML += '<button class="btn btn-purple" onclick="openBooking('+l.id+')">📅 Book Rental</button>';
@@ -2020,6 +2021,32 @@ async function executeBooking(id, days, total) {
 // ═══════════════════════════════════
 // BUY / OFFER / TRADE / MSG / SAVE
 // ═══════════════════════════════════
+async function fetchShippingRates(id) {
+  const l = listings.find(x => x.id === id);
+  if (!l) return;
+  const zipEl = document.getElementById('zipInput-' + id);
+  const ratesEl = document.getElementById('shippingRates-' + id);
+  const zip = zipEl ? zipEl.value.trim() : '';
+  if (!zip || zip.length !== 5) { toast('Enter a valid 5-digit ZIP code'); return; }
+  ratesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--sandstone);opacity:0.7;padding:0.4rem 0;">Getting rates...</div>';
+  try {
+    const res = await fetch('/.netlify/functions/get-shipping-rates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toZip: zip, weight: 2, length: 12, width: 10, height: 6 }),
+    });
+    const data = await res.json();
+    if (!data.rates || data.rates.length === 0) {
+      ratesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--sandstone);opacity:0.7;padding:0.4rem 0;">No rates available for this ZIP.</div>';
+      return;
+    }
+    ratesEl.innerHTML = '<div style="font-size:0.75rem;font-family:Barlow Condensed,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:0.3rem;">Shipping Options</div>' +
+      data.rates.map(r => '<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:0.25rem 0;border-bottom:1px solid rgba(201,151,58,0.08);"><span style="color:var(--sandstone);">' + r.provider + ' ' + r.service + (r.days ? ' (' + r.days + ' days)' : '') + '</span><span style="color:var(--cream);font-weight:600;">$' + r.amount.toFixed(2) + '</span></div>').join('');
+  } catch(err) {
+    ratesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--danger);padding:0.4rem 0;">Could not get rates. Try again.</div>';
+  }
+}
+
 async function handleBuy(id) {
   if (!currentUser) { openAuth(); return; }
   const l = listings.find(x => x.id === id);
