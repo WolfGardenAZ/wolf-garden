@@ -726,6 +726,114 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
      BROWSE PAGE
 ═══════════════════════════════════ -->
 <div class="page" id="page-browse">
+
+<!-- RENTAL EXPLAINER BANNER -->
+<div id="rentalExplainer" style="display:none;background:linear-gradient(135deg,rgba(156,39,176,0.07) 0%,rgba(13,13,13,0) 100%);border-bottom:1px solid rgba(156,39,176,0.18);padding:2.5rem 2rem;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#CE93D8;margin-bottom:0.5rem;">How It Works</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4vw,3rem);letter-spacing:0.05em;color:var(--cream);">Wolf Garden Rentals</div>
+      <p style="font-size:0.95rem;color:var(--sandstone);opacity:0.8;max-width:700px;margin:0.75rem auto 0;line-height:1.75;">Rent world-class optics, night vision, and outdoor gear from verified owners — shipped to your door. We built this the right way so both sides are protected, especially when we're talking $5,000 spotting scopes and $10,000 night vision rigs. Read this once and you'll know exactly how it works.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:1.75rem;">
+      <!-- FOR THE RENTER -->
+      <div style="background:var(--charcoal);border:1px solid rgba(156,39,176,0.2);padding:1.75rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#CE93D8;margin-bottom:0.4rem;">For the Renter</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.04em;color:var(--cream);margin-bottom:1.1rem;">📦 Renting Gear</div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">1 — Book &amp; Pay</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Select your dates and check out. You pay the daily rental rate plus a fully refundable security deposit. The deposit is held by Stripe — not by the owner — and released back to your card once the owner confirms clean return.</p>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">2 — Gear Arrives, Photograph It</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">When the box arrives, <strong style="color:var(--cream);">photograph everything immediately before you use it</strong> — every surface, any existing scratches or wear. Click the photo upload link in your confirmation email and submit them. This is your protection from being held responsible for pre-existing damage.</p>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">3 — Use It, Return It</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Treat it like your own high-end gear. Pack it exactly as it arrived. The owner includes a prepaid return label inside the box — use it. Drop at any UPS location on or before the last rental day.</p>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">4 — Get Your Deposit Back</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Once the owner confirms the gear came back in the same condition, your deposit releases to your card within 3–5 business days automatically through Stripe. No chasing anyone down.</p>
+        </div>
+      </div>
+      <!-- FOR THE OWNER -->
+      <div style="background:var(--charcoal);border:1px solid rgba(156,39,176,0.2);padding:1.75rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#CE93D8;margin-bottom:0.4rem;">For the Owner</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.04em;color:var(--cream);margin-bottom:1.1rem;">🔭 Renting Out Gear</div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">1 — List Your Gear</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Set your daily rate, minimum and maximum rental days, security deposit amount, and the full replacement value of the gear. Be honest about condition — your reputation depends on it. Wolf Garden takes 18% of rental revenue to cover the platform and shipping labels both ways.</p>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">2 — Photograph Before Shipping</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;"><strong style="color:var(--cream);">This is the most important step.</strong> Before you pack the gear, photograph every surface in good lighting — top, bottom, all sides, lenses on and off, any existing wear. Upload via the link in your notification email. No photos on file means no damage claim coverage. Full stop.</p>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">3 — Ship Within 24 Hours</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Pack it well — use the original case if you have it. Include the prepaid return label inside the box. Ship within 24 hours of the booking start date and share tracking through Wolf Garden messaging.</p>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">4 — Confirm Return &amp; Get Paid</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">When the gear comes back, photograph it and compare to your pre-ship photos. If everything checks out, confirm the return in your dashboard. Your payout deposits to your bank within 2 business days.</p>
+        </div>
+      </div>
+      <!-- DEPOSITS & DISPUTES -->
+      <div style="background:var(--charcoal);border:1px solid rgba(156,39,176,0.2);padding:1.75rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#CE93D8;margin-bottom:0.4rem;">Both Sides</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.04em;color:var(--cream);margin-bottom:1.1rem;">🛡️ Deposits &amp; Disputes</div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">How Deposits Work</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">The owner sets the deposit — typically 20–30% of replacement cost. It is charged at booking and held by Stripe. It is not paid to the owner unless a damage claim is approved. It returns to the renter automatically on clean return confirmation.</p>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">If There's Damage</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">The owner has 48 hours after confirmed delivery to file a damage report with photos. Wolf Garden compares the owner's pre-ship photos against the renter's arrival photos and the owner's post-return photos. The photo record is the evidence — both sides are protected by it.</p>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,151,58,0.08);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">Wear vs Damage</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Dust, field smudges, and normal use marks are expected and not claimable. Cracked lenses, broken dials, missing caps, dents, and water damage are claimable. Owners who list gear as mint when it isn't will find the photo record works against them.</p>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">High Value Gear</div>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">For gear over $2,000 in replacement value we strongly recommend owners carry a personal articles insurance policy covering the equipment while in others' possession. Wolf Garden is not an insurance provider and the deposit may not cover full replacement cost on premium optics or night vision.</p>
+        </div>
+      </div>
+    </div>
+    <!-- TRUST BAR -->
+    <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;padding:1.25rem 1.5rem;background:rgba(156,39,176,0.05);border:1px solid rgba(156,39,176,0.15);margin-bottom:1.25rem;">
+      <div style="text-align:center;min-width:120px;">
+        <div style="font-size:1.6rem;margin-bottom:0.3rem;">📸</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream);">Photo Documentation</div>
+        <div style="font-size:0.72rem;color:var(--sandstone);opacity:0.55;margin-top:0.15rem;">Before &amp; after required</div>
+      </div>
+      <div style="text-align:center;min-width:120px;">
+        <div style="font-size:1.6rem;margin-bottom:0.3rem;">🔒</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream);">Deposit Held by Stripe</div>
+        <div style="font-size:0.72rem;color:var(--sandstone);opacity:0.55;margin-top:0.15rem;">Not released until confirmed</div>
+      </div>
+      <div style="text-align:center;min-width:120px;">
+        <div style="font-size:1.6rem;margin-bottom:0.3rem;">📱</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream);">Phone Verified Renters</div>
+        <div style="font-size:0.72rem;color:var(--sandstone);opacity:0.55;margin-top:0.15rem;">No anonymous bookings</div>
+      </div>
+      <div style="text-align:center;min-width:120px;">
+        <div style="font-size:1.6rem;margin-bottom:0.3rem;">🚚</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream);">Shipping Both Ways</div>
+        <div style="font-size:0.72rem;color:var(--sandstone);opacity:0.55;margin-top:0.15rem;">Included in rental price</div>
+      </div>
+      <div style="text-align:center;min-width:120px;">
+        <div style="font-size:1.6rem;margin-bottom:0.3rem;">⭐</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream);">Verified Ratings</div>
+        <div style="font-size:0.72rem;color:var(--sandstone);opacity:0.55;margin-top:0.15rem;">Real community reviews</div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button onclick="document.getElementById('rentalExplainer').style.display='none'" style="background:none;border:none;color:var(--sandstone);font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;opacity:0.45;padding:0.5rem 1rem;">Got it — hide this ↑</button>
+    </div>
+  </div>
+</div>
+
   <div class="page-header">
     <h1 class="page-title">Browse Gear</h1>
     <div class="search-row">
@@ -1457,6 +1565,10 @@ function filterCat(cat) {
 function filterAndBrowse(type) {
   setTypeFilter(type);
   go('browse');
+  if (type === 'rent') {
+    const banner = document.getElementById('rentalExplainer');
+    if (banner) banner.style.display = 'block';
+  }
 }
 
 // ═══════════════════════════════════
