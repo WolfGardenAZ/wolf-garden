@@ -1,4 +1,15 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin once
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    )
+  });
+}
+const db = admin.firestore();
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -7,8 +18,8 @@ exports.handler = async (event) => {
 
   const sig = event.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
   let stripeEvent;
+
   try {
     stripeEvent = stripe.webhooks.constructEvent(event.body, sig, webhookSecret);
   } catch (err) {
@@ -25,6 +36,21 @@ exports.handler = async (event) => {
     const amount = (session.amount_total / 100).toFixed(2);
 
     console.log(`Payment completed for listing ${listingId}: ${listingTitle}`);
+
+    // Mark listing as sold in Firestore
+    if (listingId) {
+      try {
+        const snapshot = await db.collection('listings')
+          .where('id', '==', parseInt(listingId))
+          .get();
+        if (!snapshot.empty) {
+          snapshot.forEach(doc => doc.ref.update({ sold: true }));
+          console.log(`Listing ${listingId} marked as sold`);
+        }
+      } catch (err) {
+        console.error('Firestore update error:', err.message);
+      }
+    }
 
     // Send buyer confirmation email
     if (buyerEmail) {
@@ -51,7 +77,7 @@ exports.handler = async (event) => {
       });
     }
 
-    // Notify Wolf Garden admin of new sale
+    // Notify Wolf Garden admin
     await sendEmail({
       to: 'wolfgarden21@gmail.com',
       subject: isRental
@@ -87,7 +113,6 @@ async function sendEmail({ to, subject, html }) {
       html,
     }),
   });
-
   if (!res.ok) {
     const err = await res.text();
     console.error('Resend error:', err);
