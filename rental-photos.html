@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wolf Garden — Rental Condition Photos</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9973A;--gold-light:#E8B84B;--black:#0D0D0D;--charcoal:#1E1A16;--charcoal2:#252018;--cream:#F2E8D5;--sandstone:#C9A96E;--purple:#9C27B0;--success:#4CAF50;--danger:#C0392B;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--cream);font-family:'Barlow',sans-serif;min-height:100vh;padding:2rem 1rem;}
+.wrap{max-width:680px;margin:0 auto;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.12em;color:var(--gold);margin-bottom:0.25rem;cursor:pointer;}
+.subtitle{font-size:0.82rem;color:var(--sandstone);opacity:0.6;margin-bottom:2rem;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.1em;text-transform:uppercase;}
+.card{background:var(--charcoal);border:1px solid rgba(201,151,58,0.15);padding:1.75rem;margin-bottom:1.5rem;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.04em;color:var(--cream);margin-bottom:0.5rem;line-height:1;}
+.card-sub{font-size:0.88rem;color:var(--sandstone);opacity:0.8;line-height:1.7;margin-bottom:1.25rem;}
+.tag{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.25rem 0.65rem;margin-bottom:0.85rem;}
+.tag-owner{background:rgba(201,151,58,0.12);border:1px solid rgba(201,151,58,0.3);color:var(--gold);}
+.tag-renter{background:rgba(156,39,176,0.12);border:1px solid rgba(156,39,176,0.3);color:#CE93D8;}
+.info{background:rgba(201,151,58,0.06);border:1px solid rgba(201,151,58,0.15);padding:1rem 1.1rem;font-size:0.84rem;color:var(--sandstone);line-height:1.7;margin-bottom:1.25rem;}
+.info.purple{background:rgba(156,39,176,0.06);border-color:rgba(156,39,176,0.2);}
+.info strong{color:var(--cream);}
+.upload-area{border:2px dashed rgba(201,151,58,0.3);padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;margin-bottom:1rem;border-radius:2px;}
+.upload-area:hover{border-color:var(--gold);background:rgba(201,151,58,0.03);}
+.upload-icon{font-size:3rem;margin-bottom:0.75rem;}
+.upload-area h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream);margin-bottom:0.35rem;}
+.upload-area p{font-size:0.82rem;color:var(--sandstone);opacity:0.65;line-height:1.5;}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.65rem;margin-bottom:1rem;}
+.preview-wrap{position:relative;}
+.preview-img{width:100%;aspect-ratio:1;object-fit:cover;border:1px solid rgba(201,151,58,0.2);display:block;}
+.preview-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.photo-count{font-size:0.78rem;color:var(--sandstone);opacity:0.55;margin-bottom:1rem;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.08em;}
+.btn{display:block;width:100%;cursor:pointer;border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.9rem 1.75rem;font-size:1rem;transition:all 0.2s;background:var(--gold);color:var(--black);clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);}
+.btn:hover:not(:disabled){background:var(--gold-light);}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.btn.purple{background:var(--purple);color:white;}
+.btn.purple:hover:not(:disabled){background:#ab47bc;}
+.progress-bar-wrap{background:var(--charcoal2);height:6px;margin-bottom:1rem;border-radius:2px;overflow:hidden;display:none;}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s;border-radius:2px;}
+.checklist{list-style:none;margin-bottom:1.25rem;}
+.checklist li{font-size:0.84rem;color:var(--sandstone);padding:0.3rem 0;display:flex;align-items:flex-start;gap:0.5rem;line-height:1.5;}
+.checklist li::before{content:'→';color:var(--gold);font-family:'Bebas Neue',sans-serif;flex-shrink:0;margin-top:1px;}
+.success-box{background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.3);padding:2rem;text-align:center;display:none;}
+.success-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:0.04em;color:var(--success);margin-bottom:0.75rem;}
+.success-sub{font-size:0.88rem;color:var(--sandstone);line-height:1.7;opacity:0.85;}
+.booking-ref{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:0.1em;color:var(--sandstone);opacity:0.45;margin-top:1rem;}
+.error-box{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);padding:1.5rem;text-align:center;}
+.error-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--danger);margin-bottom:0.5rem;}
+.error-sub{font-size:0.85rem;color:var(--sandstone);opacity:0.75;}
+.loading-box{text-align:center;padding:3rem 1rem;}
+.loading-box p{font-family:'Barlow Condensed',sans-serif;font-size:1rem;letter-spacing:0.1em;color:var(--sandstone);opacity:0.6;margin-top:1rem;}
+.spinner{width:40px;height:40px;border:3px solid rgba(201,151,58,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.already-uploaded{background:rgba(76,175,80,0.06);border:1px solid rgba(76,175,80,0.2);padding:1rem;margin-bottom:1rem;font-size:0.84rem;color:#81c784;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo" onclick="window.location.href='https://wolfgardenaz.com'">Wolf Garden</div>
+  <div class="subtitle">Rental Condition Documentation</div>
+
+  <!-- LOADING -->
+  <div class="card" id="loadingBox">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Loading booking...</p>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="card error-box" id="errorBox" style="display:none;">
+    <div class="error-title">Link Invalid</div>
+    <div class="error-sub">This link appears to be invalid or expired. Please check your email for the correct link, or contact <a href="mailto:wolfgarden21@gmail.com" style="color:var(--gold);">wolfgarden21@gmail.com</a> for help.</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="mainContent" style="display:none;">
+
+    <!-- BOOKING INFO -->
+    <div class="card" id="bookingInfoCard">
+      <div id="roleTag" class="tag"></div>
+      <div class="card-title" id="pageTitle"></div>
+      <div style="font-size:0.78rem;color:var(--sandstone);opacity:0.45;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.08em;margin-bottom:1rem;" id="bookingRef"></div>
+      <div class="card-sub" id="pageDesc"></div>
+      <div class="info" id="infoBox"></div>
+
+      <!-- PHOTO CHECKLIST -->
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);opacity:0.8;margin-bottom:0.5rem;">What to photograph</div>
+      <ul class="checklist" id="checklist"></ul>
+
+      <!-- ALREADY UPLOADED NOTICE -->
+      <div class="already-uploaded" id="alreadyUploaded" style="display:none;">
+        ✅ You have already uploaded condition photos for this booking. You can upload additional photos below if needed.
+      </div>
+
+      <!-- UPLOAD AREA -->
+      <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+        <div class="upload-icon">📸</div>
+        <h3>Add Condition Photos</h3>
+        <p>Tap to select photos from your camera roll or take new ones</p>
+        <p style="margin-top:0.35rem;">Up to 20 photos · JPG or PNG · Good lighting required</p>
+        <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotos(event)">
+      </div>
+
+      <div id="previewGrid" class="preview-grid"></div>
+      <div class="photo-count" id="photoCount">0 photos selected</div>
+
+      <div class="progress-bar-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+
+      <button class="btn" id="uploadBtn" onclick="uploadPhotos()" disabled>Upload Condition Photos</button>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-box" id="successBox">
+      <div style="font-size:3rem;margin-bottom:0.75rem;">✅</div>
+      <div class="success-title">Photos Uploaded</div>
+      <div class="success-sub" id="successMsg"></div>
+      <div class="booking-ref" id="successBookingRef"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCq_XTymmgD8-XItbP_BLsTnbIbZIh5lf8",
+  authDomain: "wolf-garden.firebaseapp.com",
+  projectId: "wolf-garden",
+  storageBucket: "wolf-garden.firebasestorage.app",
+  messagingSenderId: "340727546813",
+  appId: "1:340727546813:web:7aa628f23dda4ab03f48d4"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+const params = new URLSearchParams(window.location.search);
+const bookingId = params.get('booking');
+const role = params.get('role'); // 'owner' or 'renter'
+
+let selectedFiles = [];
+let bookingData = null;
+
+const ownerChecklist = [
+  'All sides of the item (top, bottom, left, right, front, back)',
+  'Lens caps on AND off — show the glass clearly',
+  'Any existing scratches, dents, or wear marks — close up',
+  'All included accessories (caps, cases, straps, adapters)',
+  'Serial number if visible',
+  'Item inside its case or packaging',
+];
+
+const renterChecklist = [
+  'Everything inside the box as it arrived',
+  'All sides of the item immediately after unboxing',
+  'Any damage noticed on arrival — photograph clearly',
+  'All included accessories present and their condition',
+  'The prepaid return label that came in the box',
+];
+
+async function init() {
+  if (!bookingId || !role || (role !== 'owner' && role !== 'renter')) {
+    showError();
+    return;
+  }
+
+  try {
+    const doc = await db.collection('rentalBookings').doc(bookingId).get();
+    if (!doc.exists) {
+      showError();
+      return;
+    }
+
+    bookingData = doc.data();
+
+    document.getElementById('loadingBox').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    document.getElementById('bookingRef').textContent = 'Booking: ' + bookingId;
+    document.getElementById('successBookingRef').textContent = 'Booking ID: ' + bookingId;
+
+    const existingPhotos = role === 'owner' ? (bookingData.ownerPhotos || []) : (bookingData.renterPhotos || []);
+    if (existingPhotos.length > 0) {
+      document.getElementById('alreadyUploaded').style.display = 'block';
+    }
+
+    if (role === 'owner') {
+      document.getElementById('roleTag').textContent = '🔭 Gear Owner';
+      document.getElementById('roleTag').className = 'tag tag-owner';
+      document.getElementById('pageTitle').textContent = 'Pre-Ship Condition Photos';
+      document.getElementById('pageDesc').textContent = `Document the condition of "${bookingData.listingTitle}" before you pack and ship it. These photos are your legal protection if there is any dispute about damage when the gear is returned.`;
+      document.getElementById('infoBox').innerHTML = '<strong>This step is required before shipping.</strong> Listings without pre-ship photos on file are not eligible for damage claim coverage. No excuses — photograph everything.';
+      document.getElementById('uploadBtn').className = 'btn';
+      document.getElementById('successMsg').textContent = 'Your pre-ship condition photos have been saved. These are now on file as the official record of the gear\'s condition before it left your hands. Ship within 24 hours and include the prepaid return label inside the box.';
+    } else {
+      document.getElementById('roleTag').textContent = '📦 Renter';
+      document.getElementById('roleTag').className = 'tag tag-renter';
+      document.getElementById('pageTitle').textContent = 'Arrival Condition Photos';
+      document.getElementById('pageDesc').textContent = `Document the condition of "${bookingData.listingTitle}" as it arrived. Do this immediately when you open the box — before you use the gear. These photos are your protection if the owner files a damage claim for something that was already damaged.`;
+      document.getElementById('infoBox').innerHTML = '<strong>Do this immediately on arrival — before you use the gear.</strong> If you notice any damage when you open the box, photograph it clearly and contact wolfgarden21@gmail.com right away.';
+      document.getElementById('infoBox').className = 'info purple';
+      document.getElementById('uploadBtn').className = 'btn purple';
+      document.getElementById('successMsg').textContent = 'Your arrival condition photos have been saved to your booking record. You\'re protected. Enjoy the gear — return it in the same condition and your deposit will be back on your card within 3-5 business days after the owner confirms the return.';
+    }
+
+    // Build checklist
+    const list = role === 'owner' ? ownerChecklist : renterChecklist;
+    const ul = document.getElementById('checklist');
+    list.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      ul.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error('Init error:', err);
+    showError();
+  }
+}
+
+function showError() {
+  document.getElementById('loadingBox').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'block';
+}
+
+function handlePhotos(e) {
+  const files = Array.from(e.target.files);
+  const remaining = 20 - selectedFiles.length;
+  const toAdd = files.slice(0, remaining);
+  selectedFiles = [...selectedFiles, ...toAdd];
+
+  renderPreviews();
+  e.target.value = '';
+}
+
+function renderPreviews() {
+  const grid = document.getElementById('previewGrid');
+  grid.innerHTML = '';
+
+  selectedFiles.forEach((f, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'preview-wrap';
+
+    const img = document.createElement('img');
+    img.className = 'preview-img';
+    img.src = URL.createObjectURL(f);
+
+    const btn = document.createElement('button');
+    btn.className = 'preview-remove';
+    btn.textContent = '✕';
+    btn.onclick = () => removePhoto(i);
+
+    wrap.appendChild(img);
+    wrap.appendChild(btn);
+    grid.appendChild(wrap);
+  });
+
+  document.getElementById('photoCount').textContent = selectedFiles.length + ' photo' + (selectedFiles.length !== 1 ? 's' : '') + ' selected';
+  document.getElementById('uploadBtn').disabled = selectedFiles.length === 0;
+}
+
+function removePhoto(index) {
+  selectedFiles.splice(index, 1);
+  renderPreviews();
+}
+
+async function uploadPhotos() {
+  if (!selectedFiles.length || !bookingId) return;
+
+  const btn = document.getElementById('uploadBtn');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+
+  btn.disabled = true;
+  progressWrap.style.display = 'block';
+
+  try {
+    const urls = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      const filename = `${role}_${Date.now()}_${i}.jpg`;
+      const ref = storage.ref(`rentalBookings/${bookingId}/${filename}`);
+
+      await ref.put(file);
+      const url = await ref.getDownloadURL();
+      urls.push(url);
+
+      const pct = Math.round(((i + 1) / selectedFiles.length) * 100);
+      progressBar.style.width = pct + '%';
+      btn.textContent = `Uploading ${i + 1} of ${selectedFiles.length}...`;
+    }
+
+    // Save to Firestore
+    const field = role === 'owner' ? 'ownerPhotos' : 'renterPhotos';
+    const timestampField = role === 'owner' ? 'ownerPhotosUploadedAt' : 'renterPhotosUploadedAt';
+
+    await db.collection('rentalBookings').doc(bookingId).update({
+      [field]: firebase.firestore.FieldValue.arrayUnion(...urls),
+      [timestampField]: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Show success
+    document.getElementById('bookingInfoCard').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+
+  } catch (err) {
+    console.error('Upload error:', err);
+    btn.disabled = false;
+    btn.textContent = 'Upload Condition Photos';
+    progressWrap.style.display = 'none';
+    alert('Upload failed: ' + err.message + '\n\nPlease try again or contact wolfgarden21@gmail.com');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
