@@ -38,7 +38,7 @@ exports.handler = async (event) => {
     console.log(`Payment completed for listing ${listingId}: ${listingTitle}`);
 
     // Mark listing as sold in Firestore
-    if (listingId) {
+    if (listingId && !isRental) {
       try {
         const snapshot = await db.collection('listings')
           .where('id', '==', parseInt(listingId))
@@ -48,36 +48,97 @@ exports.handler = async (event) => {
           console.log(`Listing ${listingId} marked as sold`);
         }
       } catch (err) {
-        console.error('Firestore update error:', err.message);
+        console.error('Firestore sold update error:', err.message);
       }
     }
 
-    // Send buyer confirmation email
-    if (buyerEmail) {
+    // Create rental booking record if this is a rental
+    if (isRental && listingId) {
+      try {
+        const bookingId = 'booking_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const ownerEmail = session.metadata?.ownerEmail || '';
+
+        await db.collection('rentalBookings').doc(bookingId).set({
+          bookingId,
+          listingId,
+          listingTitle,
+          ownerEmail,
+          renterEmail: buyerEmail || '',
+          totalAmount: amount,
+          deposit: session.metadata?.deposit || 0,
+          status: 'active',
+          ownerPhotos: [],
+          renterPhotos: [],
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const ownerUploadUrl = `https://wolfgardenaz.com/rental-photos.html?booking=${bookingId}&role=owner`;
+        const renterUploadUrl = `https://wolfgardenaz.com/rental-photos.html?booking=${bookingId}&role=renter`;
+
+        // Email owner their photo upload link
+        if (ownerEmail) {
+          await sendEmail({
+            to: ownerEmail,
+            subject: `Action Required — Photograph gear before shipping: ${listingTitle}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h2 style="color:#C9973A;">Wolf Garden — New Rental Booking</h2>
+              <p>Your <strong>${listingTitle}</strong> has been booked for rental.</p>
+              <p><strong>Amount you'll receive:</strong> $${amount}</p>
+              <p style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #C9973A;">
+                <strong style="color:#C9973A;">⚠️ Required before shipping:</strong><br>
+                Photograph the gear thoroughly before you pack it. These photos protect you if there is any dispute about damage.
+              </p>
+              <p style="margin-top:1rem;">
+                <a href="${ownerUploadUrl}" style="display:inline-block;background:#9C27B0;color:white;padding:12px 24px;text-decoration:none;font-weight:bold;border-radius:4px;">📸 Upload Pre-Ship Photos</a>
+              </p>
+              <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">Ship within 24 hours of the rental start date. Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+            </div>`,
+          });
+        }
+
+        // Email renter their photo upload link
+        if (buyerEmail) {
+          await sendEmail({
+            to: buyerEmail,
+            subject: `Wolf Garden — Rental Confirmed: ${listingTitle}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h2 style="color:#C9973A;">Wolf Garden — Rental Booking Confirmed</h2>
+              <p>Your rental of <strong>${listingTitle}</strong> is confirmed.</p>
+              <p><strong>Total charged: $${amount}</strong></p>
+              <p style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #9C27B0;">
+                <strong style="color:#CE93D8;">📦 When your gear arrives:</strong><br>
+                Photograph everything immediately before you use it. This protects you from being held responsible for any pre-existing damage.
+              </p>
+              <p style="margin-top:1rem;">
+                <a href="${renterUploadUrl}" style="display:inline-block;background:#9C27B0;color:white;padding:12px 24px;text-decoration:none;font-weight:bold;border-radius:4px;">📸 Upload Arrival Photos</a>
+              </p>
+              <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">The owner will ship with a prepaid return label inside the box. Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+            </div>`,
+          });
+        }
+
+        console.log(`Rental booking created: ${bookingId}`);
+      } catch (err) {
+        console.error('Rental booking creation error:', err.message);
+      }
+    }
+
+    // Send buyer confirmation email (non-rental)
+    if (buyerEmail && !isRental) {
       await sendEmail({
         to: buyerEmail,
-        subject: isRental
-          ? `Wolf Garden — Rental Booking Confirmed: ${listingTitle}`
-          : `Wolf Garden — Order Confirmed: ${listingTitle}`,
-        html: isRental
-          ? `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-              <h2 style="color:#C9973A;">Wolf Garden</h2>
-              <p>Your rental booking for <strong>${listingTitle}</strong> is confirmed.</p>
-              <p><strong>Total charged: $${amount}</strong></p>
-              <p>The seller will be in touch shortly with shipping details.</p>
-              <p style="color:#888;font-size:0.85rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
-            </div>`
-          : `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-              <h2 style="color:#C9973A;">Wolf Garden</h2>
-              <p>Your order for <strong>${listingTitle}</strong> is confirmed.</p>
-              <p><strong>Total charged: $${amount}</strong></p>
-              <p>The seller will ship your item and provide tracking through Wolf Garden messaging.</p>
-              <p style="color:#888;font-size:0.85rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
-            </div>`,
+        subject: `Wolf Garden — Order Confirmed: ${listingTitle}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <h2 style="color:#C9973A;">Wolf Garden</h2>
+          <p>Your order for <strong>${listingTitle}</strong> is confirmed.</p>
+          <p><strong>Total charged: $${amount}</strong></p>
+          <p>The seller will ship your item and provide tracking through Wolf Garden messaging.</p>
+          <p style="color:#888;font-size:0.85rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+        </div>`,
       });
     }
 
-    // Notify Wolf Garden admin
+    // Notify Wolf Garden admin of new sale or rental
     await sendEmail({
       to: 'wolfgarden21@gmail.com',
       subject: isRental
