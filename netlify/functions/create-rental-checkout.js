@@ -6,7 +6,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { listing, days, rentalTotal, deposit, buyerEmail } = JSON.parse(event.body);
+    const { listing, days, rentalTotal, deposit, buyerEmail, startDate, endDate } = JSON.parse(event.body);
 
     if (!listing || !days || !rentalTotal) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Missing rental data' }) };
@@ -44,6 +44,9 @@ exports.handler = async (event) => {
           quantity: 1,
         },
       ],
+      shipping_address_collection: {
+        allowed_countries: ['US'],
+      },
       metadata: {
         type: 'rental',
         listingId: String(listing.id || ''),
@@ -51,6 +54,10 @@ exports.handler = async (event) => {
         depositAmount: String(deposit || listing.rentalDeposit || 150),
         days: String(days),
         ownerEmail: listing.sellerEmail || '',
+        startDate: startDate || '',
+        endDate: endDate || '',
+        packageSize: listing.packageSize || 'medium',
+        packageWeight: String(listing.packageWeight || 5),
       },
       success_url: 'https://wolfgardenaz.com/?payment=success&listing=' + (listing.id || '') + '&type=rental',
       cancel_url: 'https://wolfgardenaz.com/?payment=cancelled',
