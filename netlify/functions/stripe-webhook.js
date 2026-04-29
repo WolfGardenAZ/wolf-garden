@@ -59,7 +59,7 @@ exports.handler = async (event) => {
         const ownerEmail = session.metadata?.ownerEmail || '';
         const startDate = session.metadata?.startDate || '';
         const endDate = session.metadata?.endDate || '';
-        const renterAddress = session.shipping_details?.address || null;
+       const renterAddress = session.shipping_details?.address || session.customer_details?.address || null;
 
         // Fetch listing from Firestore to get owner ship-from address and package info
         let shipFromAddress = null;
