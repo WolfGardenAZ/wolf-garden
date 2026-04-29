@@ -57,6 +57,55 @@ exports.handler = async (event) => {
       try {
         const bookingId = 'booking_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const ownerEmail = session.metadata?.ownerEmail || '';
+        const startDate = session.metadata?.startDate || '';
+        const endDate = session.metadata?.endDate || '';
+        const renterAddress = session.shipping_details?.address || null;
+
+        // Fetch listing from Firestore to get owner ship-from address and package info
+        let shipFromAddress = null;
+        let packageWeight = parseFloat(session.metadata?.packageWeight || '5');
+        let packageSize = session.metadata?.packageSize || 'medium';
+
+        const listingSnap = await db.collection('listings')
+          .where('id', '==', parseInt(listingId))
+          .get();
+        if (!listingSnap.empty) {
+          const listingData = listingSnap.docs[0].data();
+          shipFromAddress = listingData.shipFromAddress || null;
+          if (listingData.packageWeight) packageWeight = listingData.packageWeight;
+          if (listingData.packageSize) packageSize = listingData.packageSize;
+        }
+
+        // Generate shipping labels if we have all the address info
+        let outboundLabelUrl = null;
+        let returnLabelUrl = null;
+
+        if (shipFromAddress && renterAddress) {
+          try {
+            const labelRes = await fetch('https://wolfgardenaz.com/.netlify/functions/generate-rental-labels', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                bookingId,
+                ownerAddress: shipFromAddress,
+                renterAddress,
+                packageWeight,
+                packageSize,
+              }),
+            });
+            if (labelRes.ok) {
+              const labelData = await labelRes.json();
+              outboundLabelUrl = labelData.outboundLabelUrl || null;
+              returnLabelUrl = labelData.returnLabelUrl || null;
+            } else {
+              console.error('Label generation failed:', await labelRes.text());
+            }
+          } catch (labelErr) {
+            console.error('Label generation error:', labelErr.message);
+          }
+        } else {
+          console.log('Skipping label generation — missing addresses. shipFrom:', !!shipFromAddress, 'renter:', !!renterAddress);
+        }
 
         await db.collection('rentalBookings').doc(bookingId).set({
           bookingId,
@@ -64,8 +113,13 @@ exports.handler = async (event) => {
           listingTitle,
           ownerEmail,
           renterEmail: buyerEmail || '',
+          renterAddress: renterAddress || null,
           totalAmount: amount,
-          deposit: session.metadata?.deposit || 0,
+          deposit: session.metadata?.depositAmount || 0,
+          startDate,
+          endDate,
+          outboundLabelUrl,
+          returnLabelUrl,
           status: 'active',
           ownerPhotos: [],
           renterPhotos: [],
@@ -75,7 +129,21 @@ exports.handler = async (event) => {
         const ownerUploadUrl = `https://wolfgardenaz.com/rental-photos.html?booking=${bookingId}&role=owner`;
         const renterUploadUrl = `https://wolfgardenaz.com/rental-photos.html?booking=${bookingId}&role=renter`;
 
-        // Email owner their photo upload link
+        const labelSection = (outboundLabelUrl && returnLabelUrl) ? `
+          <div style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #C9973A;">
+            <strong style="color:#C9973A;">📦 Shipping Labels Ready</strong><br>
+            <p style="margin-top:0.5rem;">Print the outbound label and ship within 24 hours. Put the return label inside the box.</p>
+            <p style="margin-top:0.75rem;">
+              <a href="${outboundLabelUrl}" style="display:inline-block;background:#4A7FA5;color:white;padding:10px 20px;text-decoration:none;font-weight:bold;border-radius:4px;margin-right:0.5rem;">🖨️ Print Outbound Label</a>
+              <a href="${returnLabelUrl}" style="display:inline-block;background:#555;color:white;padding:10px 20px;text-decoration:none;font-weight:bold;border-radius:4px;">📄 Return Label (put in box)</a>
+            </p>
+          </div>` : `
+          <div style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #888;">
+            <strong style="color:#aaa;">⚠️ Shipping Labels</strong><br>
+            <p style="margin-top:0.5rem;color:#888;">Labels couldn't be generated automatically. Contact wolfgarden21@gmail.com and we'll get them to you.</p>
+          </div>`;
+
+        // Email owner
         if (ownerEmail) {
           await sendEmail({
             to: ownerEmail,
@@ -83,6 +151,7 @@ exports.handler = async (event) => {
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
               <h2 style="color:#C9973A;">Wolf Garden — New Rental Booking</h2>
               <p>Your <strong>${listingTitle}</strong> has been booked for rental.</p>
+              <p><strong>Rental dates:</strong> ${startDate || '—'} → ${endDate || '—'}</p>
               <p><strong>Amount you'll receive:</strong> $${amount}</p>
               <p style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #C9973A;">
                 <strong style="color:#C9973A;">⚠️ Required before shipping:</strong><br>
@@ -91,12 +160,13 @@ exports.handler = async (event) => {
               <p style="margin-top:1rem;">
                 <a href="${ownerUploadUrl}" style="display:inline-block;background:#9C27B0;color:white;padding:12px 24px;text-decoration:none;font-weight:bold;border-radius:4px;">📸 Upload Pre-Ship Photos</a>
               </p>
-              <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">Ship within 24 hours of the rental start date. Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+              ${labelSection}
+              <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
             </div>`,
           });
         }
 
-        // Email renter their photo upload link
+        // Email renter
         if (buyerEmail) {
           await sendEmail({
             to: buyerEmail,
@@ -104,15 +174,16 @@ exports.handler = async (event) => {
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
               <h2 style="color:#C9973A;">Wolf Garden — Rental Booking Confirmed</h2>
               <p>Your rental of <strong>${listingTitle}</strong> is confirmed.</p>
+              <p><strong>Rental dates:</strong> ${startDate || '—'} → ${endDate || '—'}</p>
               <p><strong>Total charged: $${amount}</strong></p>
               <p style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #9C27B0;">
                 <strong style="color:#CE93D8;">📦 When your gear arrives:</strong><br>
-                Photograph everything immediately before you use it. This protects you from being held responsible for any pre-existing damage.
+                Photograph everything immediately before you use it. This protects you from being held responsible for any pre-existing damage. A prepaid return label is included in the box — use it to ship back on or before your last rental day.
               </p>
               <p style="margin-top:1rem;">
                 <a href="${renterUploadUrl}" style="display:inline-block;background:#9C27B0;color:white;padding:12px 24px;text-decoration:none;font-weight:bold;border-radius:4px;">📸 Upload Arrival Photos</a>
               </p>
-              <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">The owner will ship with a prepaid return label inside the box. Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+              <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
             </div>`,
           });
         }
