@@ -14,9 +14,9 @@ exports.handler = async (event) => {
 
     const rentalAmountCents = Math.round(rentalTotal * 100);
     const depositCents = Math.round((deposit || listing.rentalDeposit || 150) * 100);
-    const wgFeeCents = Math.round(rentalTotal * 0.05 * 100);
+    const wgFeeCents = Math.round(rentalTotal * 0.18 * 100);
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       payment_method_types: ['card'],
       mode: 'payment',
       customer_email: buyerEmail || undefined,
@@ -44,9 +44,40 @@ exports.handler = async (event) => {
           quantity: 1,
         },
       ],
-      payment_intent_data: {
+      metadata: {
+        type: 'rental',
+        listingId: String(listing.id || ''),
+        listingTitle: listing.title || '',
+        depositAmount: String(deposit || listing.rentalDeposit || 150),
+        days: String(days),
+        ownerEmail: listing.sellerEmail || '',
+      },
+      success_url: 'https://wolfgardenaz.com/?payment=success&listing=' + (listing.id || '') + '&type=rental',
+      cancel_url: 'https://wolfgardenaz.com/?payment=cancelled',
+    };
+
+    // Add Stripe Connect transfer if seller has connected their account
+    if (listing.stripeAccountId) {
+      sessionParams.payment_intent_data = {
         application_fee_amount: wgFeeCents,
-        transfer_data: listing.stripeAccountId ? { destination: listing.stripeAccountId } : undefined,
-        metadata: {
-          type: 'rental',
-          depositAmount: S
+        transfer_data: {
+          destination: listing.stripeAccountId,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ url: session.url }),
+    };
+
+  } catch (err) {
+    console.error('Rental checkout error:', err.message);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
