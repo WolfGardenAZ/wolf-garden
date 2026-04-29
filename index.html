@@ -944,6 +944,25 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
         <div class="fg"><label>Max Rental Days</label><input type="number" id="rentMax" placeholder="14" min="1" value="14"></div>
       </div>
       <div class="fg"><label>Item Replacement Value ($)</label><input type="number" id="rentValue" placeholder="e.g. 500" min="0"></div>
+      <div style="margin-top:0.5rem;margin-bottom:1rem;padding:1rem;background:rgba(74,127,165,0.07);border:1px solid rgba(74,127,165,0.2);">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#4A7FA5;margin-bottom:0.75rem;">📦 Ship-From Address <span style="opacity:0.6;font-weight:400;">(private — never shown to renters)</span></div>
+        <div class="fg"><label>Street Address</label><input type="text" id="rentShipStreet" placeholder="123 Main St"></div>
+        <div class="rental-fields-grid">
+          <div class="fg"><label>City</label><input type="text" id="rentShipCity" placeholder="Phoenix"></div>
+          <div class="fg"><label>State</label><input type="text" id="rentShipState" placeholder="AZ" maxlength="2"></div>
+        </div>
+        <div class="fg"><label>ZIP Code</label><input type="text" id="rentShipZip" placeholder="85001" maxlength="10"></div>
+        <div class="rental-fields-grid">
+          <div class="fg"><label>Package Weight (lbs)</label><input type="number" id="rentWeight" placeholder="e.g. 5" min="0.1" step="0.1"></div>
+          <div class="fg"><label>Package Size</label>
+            <select id="rentPackageSize">
+              <option value="small">Small (12×10×6 in)</option>
+              <option value="medium" selected>Medium (16×12×8 in)</option>
+              <option value="large">Large (20×16×12 in)</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="fg"><label>Description</label><textarea id="postDesc" placeholder="Describe your item — condition, age, why selling, what's included..."></textarea></div>
@@ -1984,17 +2003,46 @@ function showDetail(id) {
     </div>
   `;
   go('detail');
-  // Init rental calendar if needed
-  if (isRent) renderCalendar(l);
+  // Init rental calendar if needed — fetch real booked dates from Firestore first
+  if (isRent) {
+    renderCalendar(l, []);
+    if (db) {
+      db.collection('rentalBookings')
+        .where('listingId', '==', String(l.id))
+        .where('status', '==', 'active')
+        .get()
+        .then(snapshot => {
+          const bookedDates = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.startDate && data.endDate) {
+              // Expand date range into individual dates
+              let cur = new Date(data.startDate);
+              const end = new Date(data.endDate);
+              while (cur <= end) {
+                bookedDates.push(cur.toISOString().split('T')[0]);
+                cur.setDate(cur.getDate() + 1);
+              }
+            }
+          });
+          renderCalendar(l, bookedDates);
+        })
+        .catch(err => {
+          console.error('Could not fetch booked dates:', err);
+          renderCalendar(l, []);
+        });
+    }
+  }
 }
 
 // ═══════════════════════════════════
 // RENTAL CALENDAR
 // ═══════════════════════════════════
-function renderCalendar(l) {
+function renderCalendar(l, bookedDates) {
   const wrap = document.getElementById('calWrap-' + l.id);
   if (!wrap) return;
-  const bookedDates = ['2026-04-20','2026-04-21','2026-04-22'];
+  bookedDates = bookedDates || l._bookedDates || [];
+  l._bookedDates = bookedDates; // cache on listing so month changes preserve them
   const now = new Date();
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
@@ -2119,8 +2167,22 @@ async function executeBooking(id, days, total) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        listing: { id: l.id, title: l.title, rentalPricePerDay: l.rentalPricePerDay||25, rentalDeposit: dep, sellerId: l.seller||'', stripeAccountId: l.stripeAccountId||null },
-        days: days, rentalTotal: rentalOnly, deposit: dep,
+        listing: {
+          id: l.id,
+          title: l.title,
+          rentalPricePerDay: l.rentalPricePerDay || 25,
+          rentalDeposit: dep,
+          sellerEmail: l.sellerEmail || '',
+          sellerId: l.seller || '',
+          stripeAccountId: l.stripeAccountId || null,
+          packageWeight: l.packageWeight || 5,
+          packageSize: l.packageSize || 'medium',
+        },
+        days: days,
+        rentalTotal: rentalOnly,
+        deposit: dep,
+        startDate: rentalStart || '',
+        endDate: rentalEnd || '',
         buyerEmail: currentUser ? currentUser.email : '',
       }),
     });
@@ -2410,6 +2472,12 @@ function submitListing() {
   const rmin = parseInt(document.getElementById('rentMin')?.value) || 2;
   const rmax = parseInt(document.getElementById('rentMax')?.value) || 14;
   const rval = parseFloat(document.getElementById('rentValue')?.value) || 0;
+  const shipStreet = document.getElementById('rentShipStreet')?.value.trim() || '';
+  const shipCity = document.getElementById('rentShipCity')?.value.trim() || '';
+  const shipState = document.getElementById('rentShipState')?.value.trim() || '';
+  const shipZip = document.getElementById('rentShipZip')?.value.trim() || '';
+  const packageWeight = parseFloat(document.getElementById('rentWeight')?.value) || 5;
+  const packageSize = document.getElementById('rentPackageSize')?.value || 'medium';
 
   if (!title) { toast('Please add a title'); return; }
   if (!desc) { toast('Please add a description'); return; }
@@ -2428,6 +2496,9 @@ function submitListing() {
     rentalPricePerDay: currentPostType === 'rent' ? rpd : 0,
     rentalDeposit: currentPostType === 'rent' ? rdep : 0,
     rentalMinDays: rmin, rentalMaxDays: rmax, rentalValue: rval,
+    shipFromAddress: currentPostType === 'rent' ? { street: shipStreet, city: shipCity, state: shipState, zip: shipZip } : null,
+    packageWeight: currentPostType === 'rent' ? packageWeight : null,
+    packageSize: currentPostType === 'rent' ? packageSize : null,
     seller: currentUser.name,
     sellerEmail: currentUser.email || '',
     sellerUid: currentUser.uid || '',
