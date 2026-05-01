@@ -27,6 +27,7 @@ exports.handler = async (event) => {
 
     // Build Shippo address objects
     const ownerShippoAddress = {
+      name: 'Wolf Garden Seller',
       street1: ownerAddress.street || ownerAddress.line1 || '',
       city: ownerAddress.city || '',
       state: ownerAddress.state || '',
@@ -36,6 +37,7 @@ exports.handler = async (event) => {
     };
 
     const renterShippoAddress = {
+      name: 'Wolf Garden Renter',
       street1: renterAddress.line1 || '',
       street2: renterAddress.line2 || '',
       city: renterAddress.city || '',
