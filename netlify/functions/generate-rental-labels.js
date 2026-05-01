@@ -100,7 +100,7 @@ exports.handler = async (event) => {
       // Step 2: Pick cheapest USPS or UPS rate
       const rates = (shipment.rates || []).filter(r =>
         ['usps', 'ups', 'fedex'].includes((r.provider || '').toLowerCase()) &&
-        r.available_shippo_guaranteed_service_levels !== false
+        r.object_id
       );
 
       if (!rates.length) {
