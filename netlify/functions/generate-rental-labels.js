@@ -62,6 +62,10 @@ exports.handler = async (event) => {
 
     // Helper: create shipment and purchase cheapest label
     async function createLabel(fromAddress, toAddress, reference) {
+      // Validate required fields before calling Shippo
+      if (!fromAddress.street1) throw new Error(`Missing street1 on fromAddress for ${reference} — got: ${JSON.stringify(fromAddress)}`);
+      if (!toAddress.street1) throw new Error(`Missing street1 on toAddress for ${reference} — got: ${JSON.stringify(toAddress)}`);
+
       // Step 1: Create shipment to get rates
       const shipmentRes = await fetch('https://api.goshippo.com/shipments/', {
         method: 'POST',
