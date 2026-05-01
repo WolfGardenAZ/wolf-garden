@@ -85,6 +85,18 @@ exports.handler = async (event) => {
 
       const shipment = await shipmentRes.json();
 
+      console.log(`Shipment created for ${reference}:`, JSON.stringify({
+        status: shipment.status,
+        rateCount: (shipment.rates || []).length,
+        rates: (shipment.rates || []).slice(0, 3).map(r => ({
+          id: r.object_id,
+          provider: r.provider,
+          amount: r.amount,
+          service: r.servicelevel?.name,
+        })),
+        messages: shipment.messages,
+      }));
+
       // Step 2: Pick cheapest USPS or UPS rate
       const rates = (shipment.rates || []).filter(r =>
         ['usps', 'ups', 'fedex'].includes((r.provider || '').toLowerCase()) &&
