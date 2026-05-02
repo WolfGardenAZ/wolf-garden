@@ -19,7 +19,7 @@ exports.handler = async (event) => {
     const sessionParams = {
       payment_method_types: ['card'],
       mode: 'payment',
-      customer_email: buyerEmail || undefined,
+      billing_address_collection: 'required',
       line_items: [
         {
           price_data: {
