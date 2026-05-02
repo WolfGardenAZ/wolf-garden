@@ -28,15 +28,7 @@ exports.handler = async (event) => {
   }
 
   if (stripeEvent.type === 'checkout.session.completed') {
-    // Expand the session to get full shipping_details
-    let session = stripeEvent.data.object;
-    try {
-      session = await stripe.checkout.sessions.retrieve(session.id, {
-        expand: ['shipping_details'],
-      });
-    } catch (err) {
-      console.error('Session expand error:', err.message);
-    }
+    const session = stripeEvent.data.object;
     const listingId = session.metadata?.listingId;
     const listingTitle = session.metadata?.listingTitle;
     const isRental = session.metadata?.type === 'rental';
