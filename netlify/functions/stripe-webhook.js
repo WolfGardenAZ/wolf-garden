@@ -77,30 +77,79 @@ exports.handler = async (event) => {
           if (listingData.packageSize) packageSize = listingData.packageSize;
         }
 
-        // Generate shipping labels if we have all the address info
+        // Generate shipping labels inline (Shippo)
         let outboundLabelUrl = null;
         let returnLabelUrl = null;
 
         if (shipFromAddress && renterAddress) {
           try {
-            const labelRes = await fetch('https://wolfgardenaz.com/.netlify/functions/generate-rental-labels', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                bookingId,
-                ownerAddress: shipFromAddress,
-                renterAddress,
-                packageWeight,
-                packageSize,
-              }),
-            });
-            if (labelRes.ok) {
-              const labelData = await labelRes.json();
-              outboundLabelUrl = labelData.outboundLabelUrl || null;
-              returnLabelUrl = labelData.returnLabelUrl || null;
-            } else {
-              console.error('Label generation failed:', await labelRes.text());
+            const BOX_SIZES = {
+              small:  { length: '12', width: '10', height: '6' },
+              medium: { length: '16', width: '12', height: '8' },
+              large:  { length: '20', width: '16', height: '12' },
+            };
+            const dims = BOX_SIZES[packageSize] || BOX_SIZES.medium;
+            const SHIPPO_API_KEY = process.env.SHIPPO_API_KEY;
+
+            const ownerShippoAddress = {
+              name: 'Wolf Garden Seller',
+              phone: '5205550000',
+              street1: shipFromAddress.street || shipFromAddress.line1 || '',
+              city: shipFromAddress.city || '',
+              state: shipFromAddress.state || '',
+              zip: shipFromAddress.zip || shipFromAddress.postal_code || '',
+              country: 'US',
+              validate: false,
+            };
+
+            const renterShippoAddress = {
+              name: 'Wolf Garden Renter',
+              phone: '5205550000',
+              street1: renterAddress.line1 || '',
+              street2: renterAddress.line2 || '',
+              city: renterAddress.city || '',
+              state: renterAddress.state || '',
+              zip: renterAddress.postal_code || '',
+              country: 'US',
+              validate: false,
+            };
+
+            const parcel = {
+              length: dims.length,
+              width: dims.width,
+              height: dims.height,
+              distance_unit: 'in',
+              weight: String(packageWeight || 5),
+              mass_unit: 'lb',
+            };
+
+            async function createShippoLabel(fromAddr, toAddr, ref) {
+              const shipRes = await fetch('https://api.goshippo.com/shipments/', {
+                method: 'POST',
+                headers: { 'Authorization': `ShippoToken ${SHIPPO_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address_from: fromAddr, address_to: toAddr, parcels: [parcel], async: false }),
+              });
+              const shipment = await shipRes.json();
+              const rates = (shipment.rates || []).filter(r => (r.provider || '').toLowerCase() === 'usps' && r.object_id);
+              if (!rates.length) throw new Error(`No USPS rates for ${ref}`);
+              rates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+              const txRes = await fetch('https://api.goshippo.com/transactions/', {
+                method: 'POST',
+                headers: { 'Authorization': `ShippoToken ${SHIPPO_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rate: rates[0].object_id, label_file_type: 'PDF', async: false }),
+              });
+              const tx = await txRes.json();
+              if (tx.status !== 'SUCCESS') throw new Error(`Label error for ${ref}: ${tx.messages?.map(m => m.text).join(', ')}`);
+              return tx.label_url;
             }
+
+            const [outUrl, retUrl] = await Promise.all([
+              createShippoLabel(ownerShippoAddress, renterShippoAddress, `${bookingId}-OUT`),
+              createShippoLabel(renterShippoAddress, ownerShippoAddress, `${bookingId}-RET`),
+            ]);
+            outboundLabelUrl = outUrl;
+            returnLabelUrl = retUrl;
+            console.log(`Labels generated: OUT=${outboundLabelUrl} RET=${returnLabelUrl}`);
           } catch (labelErr) {
             console.error('Label generation error:', labelErr.message);
           }
