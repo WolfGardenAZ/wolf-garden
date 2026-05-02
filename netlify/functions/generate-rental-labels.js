@@ -101,9 +101,9 @@ exports.handler = async (event) => {
         messages: shipment.messages,
       }));
 
-      // Step 2: Pick cheapest USPS or UPS rate
+      // Step 2: Pick cheapest USPS rate
       const rates = (shipment.rates || []).filter(r =>
-        ['usps', 'ups', 'fedex'].includes((r.provider || '').toLowerCase()) &&
+        (r.provider || '').toLowerCase() === 'usps' &&
         r.object_id
       );
 
