@@ -607,7 +607,7 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
   </div>
 
   <div class="stats-bar">
-    <div class="stat"><div class="stat-num" id="statCount">6</div><div class="stat-label">Active Listings</div></div>
+    <div class="stat"><div class="stat-num" id="statCount">—</div><div class="stat-label">Active Listings</div></div>
     <div class="stat"><div class="stat-num">4.9★</div><div class="stat-label">Avg Seller Rating</div></div>
     <div class="stat"><div class="stat-num">10+</div><div class="stat-label">Retailers Compared</div></div>
     <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Secure & Safe</div></div>
@@ -754,7 +754,7 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
         </div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">4 — Get Your Deposit Back</div>
-          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Once the owner confirms the gear came back in the same condition, your deposit releases to your card within 3–5 business days automatically through Stripe. No chasing anyone down.</p>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">Once the owner confirms the gear came back in the same condition, Wolf Garden will process your deposit release. Funds return to your card within 5–10 business days via Stripe. Contact wolfgarden21@gmail.com to initiate the return confirmation.</p>
         </div>
       </div>
       <!-- FOR THE OWNER -->
@@ -775,7 +775,7 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
         </div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">4 — Confirm Return &amp; Get Paid</div>
-          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">When the gear comes back, photograph it and compare to your pre-ship photos. If everything checks out, confirm the return in your dashboard. Your payout deposits to your bank within 2 business days.</p>
+          <p style="font-size:0.84rem;color:var(--sandstone);line-height:1.7;opacity:0.85;">When the gear comes back, photograph it and compare to your pre-ship photos. If everything checks out, email wolfgarden21@gmail.com to confirm the return. Your payout deposits to your bank within 2–5 business days via Stripe.</p>
         </div>
       </div>
       <!-- DEPOSITS & DISPUTES -->
@@ -1042,7 +1042,7 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
 // ═══════════════════════════════════
 let stripeInstance;
 try {
-  pk_live_51TLaa01zXmeK8DJAdqVO2VJJ7V566RmiMRZS2jWypmKMPGOG9MtrkJrwyIpt0Ha4iFqaW1xTOi1uq7QKOoB3rPkq00WA2jJqlP
+  stripeInstance = Stripe('pk_live_51TLaa01zXmeK8DJAdqVO2VJJ7V566RmiMRZS2jWypmKMPGOG9MtrkJrwyIpt0Ha4iFqaW1xTOi1uq7QKOoB3rPkq00WA2jJqlP');
   console.log('Stripe initialized');
 } catch(e) {
   console.log('Stripe not loaded yet');
@@ -1104,7 +1104,7 @@ updateWaitlistCount();
 
 function updateWaitlistCount() {
   const el = document.getElementById('waitlistCount');
-  if (el) el.textContent = 'Join ' + (waitlistCount + 47) + ' others already on the list';
+  if (el) el.textContent = 'Join ' + waitlistCount + ' others already on the list';
 }
 
 function joinWaitlist() {
@@ -1115,7 +1115,13 @@ function joinWaitlist() {
   updateWaitlistCount();
   document.getElementById('waitlistEmail').value = '';
   toast('You\'re on the list! We\'ll be in touch. 🐺', 'ok');
-  // In production: send email to Firebase or Mailchimp
+  // Save to Firestore
+  if (db) {
+    db.collection('waitlist').add({
+      email,
+      joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(e => console.log('Waitlist save error:', e));
+  }
 }
 
 // ═══════════════════════════════════
@@ -1131,7 +1137,7 @@ const outfitters = [
     units: 'Sonora Mexico Private Ranches, New Mexico Private Land',
     desc: 'Patrick Holehan is a Tucson-based master custom rifle maker and seasoned hunting outfitter with decades of experience. Specializing in Coues deer and Goulds turkey hunts in Sonora Mexico on private ranches, plus pronghorn antelope in New Mexico. Patrick speaks fluent Spanish, handles all border paperwork, and has been featured in Safari Magazine and praised by top gun writers nationwide. Safari Club International exhibitor.',
     rating: 5.0,
-    reviews: 0,
+    reviews: null,
     featured: true,
     logo: 'https://plholehancustomrifles.com/wp-content/uploads/2022/08/plh_logo-200x200.png',
     website: 'https://plholehancustomrifles.com',
@@ -1195,7 +1201,7 @@ function renderOutfitters() {
       ${o.phone ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:0.85rem;color:var(--sandstone);margin-top:0.4rem;">📞 ' + o.phone + '</div>' : ''}
       ${o.website ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:0.85rem;margin-top:0.3rem;"><a href="' + o.website + '" target="_blank" style="color:var(--gold);text-decoration:none;">🌐 Visit Website</a></div>' : ''}
       <div class="ocard-footer">
-        <span class="ocard-rating">★ ${o.rating} <span style="opacity:0.5;font-weight:400;">(${o.reviews} reviews)</span></span>
+        <span class="ocard-rating">★ ${o.rating} <span style="opacity:0.5;font-weight:400;">${o.reviews ? '(' + o.reviews + ' reviews)' : ''}</span></span>
         <a href="mailto:${o.contact}?subject=Hunt Inquiry - ${o.name}" class="btn btn-gold btn-sm">Contact</a>
       </div>
     </div>
@@ -2180,7 +2186,7 @@ async function executeBooking(id, days, total) {
   toast('Opening rental checkout...');
   try {
     const dep = l.rentalDeposit || 150;
-    const rentalOnly = total - dep;
+    const rentalOnly = days * (l.rentalPricePerDay || 25);
     const res = await fetch('/.netlify/functions/create-rental-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2250,7 +2256,7 @@ async function handleBuy(id) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        listing: { id: l.id, title: l.title, price: l.price, category: l.category||'', photo: (l.photos&&l.photos[0])||'', sellerId: l.seller||'', stripeAccountId: l.stripeAccountId||null },
+        listing: { id: l.id, title: l.title, price: l.price, category: l.category||'', photo: (l.photos&&l.photos[0])||'', sellerId: l.seller||'', sellerEmail: l.sellerEmail||'', stripeAccountId: l.stripeAccountId||null },
         buyerEmail: currentUser.email||'',
       }),
     });
@@ -2502,8 +2508,9 @@ function submitListing() {
   if (currentPostType === 'sell' && (!price || price <= 0)) { toast('Please enter a valid price'); return; }
   if (currentPostType === 'trade' && !wants) { toast('Please describe what you want in return'); return; }
   if (currentPostType === 'rent' && (!rpd || rpd <= 0)) { toast('Please enter a price per day'); return; }
+  if (currentPostType === 'rent' && (!shipStreet || !shipCity || !shipState || !shipZip)) { toast('Please fill in your complete ship-from address for rental listings'); return; }
 
-  const emojiMap = {Hunting:'',Fishing:'',Camping:'',Hiking:'',Optics:'',Archery:'',Apparel:'',Trapping:'','Shooting Accessories':''};
+  const emojiMap = {Hunting:'🦌',Fishing:'🎣',Camping:'⛺',Hiking:'🥾',Optics:'🔭',Archery:'🏹',Apparel:'🧥',Trapping:'🪤','Shooting Accessories':'🎯',Climbing:'🧗','Search & Rescue':'🔦'};
 
   const newListing = {
     id: Date.now(),
@@ -2551,6 +2558,16 @@ function submitListing() {
   document.getElementById('postDesc').value = '';
   document.getElementById('postLoc').value = '';
   document.getElementById('postWants').value = '';
+  document.getElementById('rentPerDay').value = '';
+  document.getElementById('rentDeposit').value = '';
+  document.getElementById('rentMin').value = '2';
+  document.getElementById('rentMax').value = '14';
+  document.getElementById('rentValue').value = '';
+  if (document.getElementById('rentShipStreet')) document.getElementById('rentShipStreet').value = '';
+  if (document.getElementById('rentShipCity')) document.getElementById('rentShipCity').value = '';
+  if (document.getElementById('rentShipState')) document.getElementById('rentShipState').value = '';
+  if (document.getElementById('rentShipZip')) document.getElementById('rentShipZip').value = '';
+  if (document.getElementById('rentWeight')) document.getElementById('rentWeight').value = '';
   document.getElementById('photoPreview').innerHTML = '';
   photoDataURLs = [];
   const countEl = document.getElementById('photoCount');
