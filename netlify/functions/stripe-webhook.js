@@ -259,6 +259,26 @@ exports.handler = async (event) => {
       });
     }
 
+    // Send seller shipping reminder email (non-rental)
+    const sellerEmail = session.metadata?.sellerEmail || session.metadata?.ownerEmail || '';
+    if (sellerEmail && !isRental) {
+      await sendEmail({
+        to: sellerEmail,
+        subject: `Action Required — Ship your item: ${listingTitle}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <h2 style="color:#C9973A;">Wolf Garden — Item Sold!</h2>
+          <p>Your <strong>${listingTitle}</strong> has been purchased.</p>
+          <p><strong>Sale amount: $${amount}</strong></p>
+          <p style="margin-top:1.5rem;padding:1rem;background:#1a1a1a;border-left:3px solid #C9973A;">
+            <strong style="color:#C9973A;">⚠️ Next steps:</strong><br>
+            Ship the item as soon as possible and provide the buyer with a tracking number through Wolf Garden messaging. Buyers expect fast shipping — aim to ship within 1-2 business days.
+          </p>
+          <p style="margin-top:1rem;">Compare shipping rates at <a href="https://www.usps.com" style="color:#C9973A;">USPS</a>, <a href="https://www.ups.com" style="color:#C9973A;">UPS</a>, or <a href="https://www.fedex.com" style="color:#C9973A;">FedEx</a> before shipping.</p>
+          <p style="color:#888;font-size:0.85rem;margin-top:1.5rem;">Questions? Email <a href="mailto:wolfgarden21@gmail.com">wolfgarden21@gmail.com</a></p>
+        </div>`,
+      });
+    }
+
     // Notify Wolf Garden admin of new sale or rental
     await sendEmail({
       to: 'wolfgarden21@gmail.com',
