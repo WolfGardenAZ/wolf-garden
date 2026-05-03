@@ -44,6 +44,7 @@ exports.handler = async (event) => {
         listingId: String(listing.id),
         listingTitle: listing.title,
         sellerId: String(listing.sellerId || ''),
+        sellerEmail: String(listing.sellerEmail || ''),
       },
       success_url: `${event.headers.origin || 'https://wolfgardenaz.com'}/?payment=success&listing=${listing.id}`,
       cancel_url: `${event.headers.origin || 'https://wolfgardenaz.com'}/?payment=cancelled`,
