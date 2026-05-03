@@ -937,6 +937,9 @@ footer{background:var(--black);border-top:1px solid rgba(201,151,58,0.12);paddin
     <!-- Rent fields -->
     <div id="rentFields" style="display:none;">
       <div class="info-box purple">📅 <strong style="color:#CE93D8;">Rental Listing</strong> — Wolf Garden handles shipping labels both ways. You earn 82% of rental revenue.</div>
+      <div style="margin-bottom:0.75rem;padding:0.75rem 1rem;background:rgba(201,151,58,0.08);border-left:3px solid var(--gold);font-size:0.82rem;color:var(--sandstone);line-height:1.6;">
+        💡 <strong style="color:var(--gold);">Pricing tip:</strong> Shipping labels both ways typically cost $15–35. We recommend a minimum daily rate of <strong style="color:var(--cream);">$25/day</strong> and minimum 2 days to ensure the rental covers platform and shipping costs.
+      </div>
       <div class="rental-fields-grid">
         <div class="fg"><label>Price Per Day ($)</label><input type="number" id="rentPerDay" placeholder="e.g. 25" min="1"></div>
         <div class="fg"><label>Security Deposit ($)</label><input type="number" id="rentDeposit" placeholder="e.g. 150" min="0"></div>
@@ -2130,12 +2133,11 @@ function updateBookingSummary(l) {
   const rpd = l.rentalPricePerDay || 25;
   const dep = l.rentalDeposit || 150;
   const rental = days * rpd;
-  const shipping = 30.98;
-  const total = rental + shipping + dep;
+  const total = rental + dep;
   el.innerHTML = `
     <div class="bsummary">
       <div class="brow"><span class="bl">$${rpd}/day × ${days} days</span><span class="bv">$${rental.toFixed(2)}</span></div>
-      <div class="brow"><span class="bl">Shipping both ways</span><span class="bv">$${shipping.toFixed(2)}</span></div>
+      <div class="brow"><span class="bl">Shipping both ways</span><span class="bv" style="color:#4A7FA5;font-weight:600;">Included ✓</span></div>
       <div class="brow"><span class="bl">Security deposit (refundable)</span><span class="bv">$${dep.toFixed(2)}</span></div>
       <div class="brow btotal"><span class="bl" style="color:var(--cream);font-weight:700;">Total</span><span class="bv">$${total.toFixed(2)}</span></div>
     </div>
@@ -2178,7 +2180,7 @@ async function executeBooking(id, days, total) {
   toast('Opening rental checkout...');
   try {
     const dep = l.rentalDeposit || 150;
-    const rentalOnly = total - dep - 30.98;
+    const rentalOnly = total - dep;
     const res = await fetch('/.netlify/functions/create-rental-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
